@@ -3,7 +3,11 @@
 Casey Mordini-Bluhm  
 Electronics for Physical Measurements Lab, Spring 2020  
 
-![Mouse Glove 2.0](assets/glove_close_up.jpg)  
+![Glove Mouse 2.0](assets/glove_close_up.jpg)  
+
+
+[![Glove Mouse 2.0](http://img.youtube.com/vi/33D6fzrKTJE/0.jpg)](https://www.youtube.com/watch?v=33D6fzrKTJE)  
+**Click image to see a simple demo of cursor movement on YouTube.**
 
 ---
 
