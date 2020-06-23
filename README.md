@@ -1,13 +1,16 @@
 # Glove Mouse 2.0
 
-![](assets/glove_close_up.jpg)
-
 Casey Mordini-Bluhm  
 Electronics for Physical Measurements Lab, Spring 2020  
-Professor Eric Hudson  
+
+![Mouse Glove 2.0](assets/glove_close_up.jpg)  
+
+---
 
 ## Objective
 The objective was to create a device that is wearable on the hand and has all the functionality of a standard computer mouse. The priorities, in descending order, were cursor movement, left click, right click, scroll, middle click, and pause of movement control (to reposition the hand or type). An additional requirement was that the user should be able to perform touch typing with no loss of accuracy or speed while wearing the glove. All of these objectives were met. 
+
+---
 
 ## Design
 The design used in this project is primarily based on the Glove Mouse project built by Hyodong Lee and Adam Shih when they were students of Bruce Land at Cornell University. Different transceivers and sensors were used, and one of the microcontrollers was replaced by an Arduino Uno. The code used in this project is a modified version of their code and code from PRJC.com. 
@@ -27,7 +30,7 @@ Many thanks to the original creators’ hard work and commitment to sharing of k
 ![Circuit diagram for the base station](assets/base_station_circuit_diagram.png)  
 **Circuit diagram for the base station.**
 
-
+---
 
 ### Hardware
 
@@ -92,6 +95,8 @@ The antenna is also set up in the same way as on the armband with the same shape
 ##### Teensy++2.0 
 As the final step, the data from the HumPRO is sent to the Teensy module, which interprets the information in the packet and converts it to USB HID class format and sends it to the computer through a mini-B to USB cable. Since the first version of the glove mouse, PRJC has released Teensyduino, which allows sketches to be written for Teensy boards in a modified Arduino IDE and uploaded. Teensyduino includes a library for USB mouse actions, eliminating the need for extra C files and HID Listen program. 
 
+---
+
 ### Software
 
 #### Glove Sketch
@@ -111,6 +116,8 @@ This function records the most recent contact pad or flex sensor to be triggered
 
 #### Base Station Sketch
 The Teensy board on the base station runs a sketch called base_station.ino, which is uploaded with the Teensyduino add-on to the Arduino IDE. Like the glove sketch, this sketch first sets up the HUMPro transceiver to be in user addressing mode and then switches it to 19200 baud. The incoming data is read and converted to mouse actions. Within the Teensyduino IDE, the type of USB connection can be set to “Keyboard + Mouse + Joystick,” providing some inbuilt functions to directly control the mouse. 
+
+---
 
 #### Recommendations for Version 3.0
 
@@ -140,6 +147,8 @@ The Teensy board on the base station runs a sketch called base_station.ino, whic
 
 - Create a GUI for reassigning the functions of each contact pad and flex sensor. 
 
+---
+
 #### Electrostatic Discharge (ESD) Wristband 
 A few of the components, namely the HUMPro transceivers and the planar antennas, were susceptible from damage from ESD. Before beginning construction of the armband and base station, an ESD wristband was built and worn at all times when working with the sensitive components. 
 
@@ -150,12 +159,16 @@ A wall socket was tested using a digital multimeter by measuring the AC voltage 
 ![ESD wristband](assets/esd_wristband.png)  
 **Construction of the ESD wristband.**
 
+---
+
 ## Project Timeline
 
 ![Project timeline](assets/project_timeline.png)  
 **Comparison of the timeline presented in initial project proposal (blue) compared to the actual timeline (red).**
 
 The timeline that was proposed at the beginning of the quarter was overly optimistic. Notably, ordering and waiting for parts to arrive took four weeks instead of the projected two weeks. The several tasks immediately after were accordingly pushed back by about two weeks, with the remaining tasks being condensed to fit the time available. Additionally, the code required significantly more time than anticipated, as it required consistent updating through the quarter.
+
+---
 
 ## Project Evaluation Metric
 
@@ -177,13 +190,14 @@ All of the objectives were met before the presentation deadline with one excepti
 
 -**Bonus:** Rapid fire mode successfully implemented 
 
+---
+
 ## Bill of Materials
  | Part | Unit Cost | Vendor | Part Number | Quantity | Cost |  
  |:-----------------------------:|:--------------:|:----:|:----:|:---:|:--:|
  | Arduino Uno (Not recommended) | Already Owned |  |   | 1 |  |  
  | Firm Grip Utility Gloves | Already Owned |  |   | 1 |  |  
  | Through-Hole LEDs | Already owned |  |   | 5 |  |  
- | Screws | Already Owned |  |   | 3 |  |  
  | Foam strip | Already Owned |  |   | 1 |  |  
  | Resistors | Already Owned |  |   | 14 |  |  
  | 10 uF Capacitors | Lab Stock |  |   | 2 |  |  
@@ -210,6 +224,7 @@ All of the objectives were met before the presentation deadline with one excepti
  | Velcro | $1.99 | Amazon | B00114506I | 1 | $1.99 |
  | Total Cost  | | 5 Vendors  | | 114 | $181.29 |  
 
+**Vendor Information**
 
 SparkFun Electronics  
 6333 Dry Creek Pkwy  
@@ -236,6 +251,7 @@ PO Box 81226
 Seattle, WA 98108  
 (206) 266-299  
 
+---
 
 ## References
 
