@@ -12,18 +12,18 @@ The design used in this project is primarily based on the Glove Mouse project bu
 
 Many thanks to the original creators’ hard work and commitment to sharing of knowledge. Their project was followed closely, with some improvements made. There were also some aspects of the design that were less successfully implemented than in original project; nonetheless, I feel it appropriate to refer to the current project as Glove Mouse 2.0.
 
-
-Block diagram for Glove Mouse 2.0. The project is made up of three units: the glove, the armband, and the base station. The glove houses sensors, which are monitored by an Arduino Uno on the armband. An RF transceiver on the armband transmits to an RF transceiver on the base station, which sends the data to a microcontroller connected to the computer. 
-
-
-
-Circuit diagram for the glove and armband. 
+![Block Diagram for Glove Mouse 2.0](assets/block_diagram.png)  
+**Block diagram for Glove Mouse 2.0.** The project is made up of three units: the glove, the armband, and the base station. The glove houses sensors, which are monitored by an Arduino Uno on the armband. An RF transceiver on the armband transmits to an RF transceiver on the base station, which sends the data to a microcontroller connected to the computer. 
 
 
+![Circuit diagram for the glove and armband](assets/armband_circuit_diagram.png)  
+**Circuit diagram for the glove and armband.**
 
 
 
-Circuit diagram for the base station. 
+
+![Circuit diagram for the base station](assets/base_station_circuit_diagram.png)  
+**Circuit diagram for the base station.**
 
 
 
@@ -33,7 +33,8 @@ Circuit diagram for the base station.
 The foundation of the glove unit is a lightweight work glove. The fingertips were cut off and the cut edges folded inward and sewn. A small protoboard was attached to the back of the glove with a piece of foam between the glove and the board and a velcro strap holding it in place. This protoboard serves as the hub for several sensors: an accelerometer, two flex sensors, and four contact pads. A bundle of wires runs from the board to the Arduino on the armband unit. One of these wires is connected to the 5 V output on the Arduino and another is connected to ground. 
 
 
-Glove carrying the sensors.
+![Glove carrying the sensors](assets/glove_close_up.png)  
+**Glove carrying the sensors.**
 
 ##### Accelerometer
 The accelerometer is soldered directly to the protoboard on the back of the glove. It outputs three analog voltages proportional to the angle that it is tilted off of three Cartesian axes. These three analog voltages are connected to the first three analog pins of the Arduino. Additionally, the 3 V output on the accelerometer is connected to the AREF pin of the Arduino to improve the quality of the measurements. (This requires setting the voltage reference to external in the Arduino sketch.) 
@@ -42,20 +43,20 @@ The accelerometer is soldered directly to the protoboard on the back of the glov
 ##### Flex Sensors
 Two flex sensors are mounted on the glove on the back of the pointer finger and middle finger. These are for left and right click, respectively. The flex sensors behave as variable resistors, so by using each as the top resistor in a voltage divider, two analog voltages proportional to the distance the fingers are flexed are sent to the A3 and A4 analog pins on the Arduino. The flex sensors used are flimsy near the leads and the leads themselves are somewhat delicate. Therefore, instead of soldering the leads, copper tape was used to connect them to longer stranded copper wires (jumper wires from Arduino Uno starter kit). Additionally, a housing was designed with shrink tubing and polypropylene strips to stop the flex sensors from bending at the weak point. The flex sensors are attached by velcro to the first knuckle of the fingers and held close to the tips of the fingers under plastic sleeves. These plastic sleeves were cut from the packaging of a hobby knife, bent into shape, and sewn in place. 
 
-
-Flex sensor casing (above) and mounting on glove (below). 
+![Flex sensors](assets/flex_sensors.png)  
+**Flex sensor casing (above) and mounting on glove (below).**
 
 ##### Contact Pads
 Four contact pads are mounted on the glove. Velcro strips were sewn onto the glove between the thumb and pointer finger and between the pointer finger and middle finger, allowing the user to adjust where the contact pads are placed. In the current configuration, two pads are on the thumb-side of the pointer finger. A third pad is between the pointer and middle fingers. The fourth pad is on the back of the thumb, intended to be pressed by the other hand. The contact pads in the first version of the Glove Mouse were made from small tabs of copper tape separated by foam with a hole punched in the middle. In this version, strips of polypropylene were cut, bent into shape, and wrapped with copper foil adhesive to serve the same function. The contact pads function as simple buttons and their presses are sent to digital pins of the Arduino. Similarly to the flex sensors, the contact pad design requires no soldering.
 
-
-Contact pad operation (top) and placement on glove (bottom).
+![Contact pads](assets/contact_pads.png)  
+**Contact pad operation (top) and placement on glove (bottom).**
 
 #### The Armband
 The foundation of the armband unit is a narrow protoboard strapped to the forearm, which carries the Arduino Uno, a HumPRO 900 MHz RF transceiver, a small planar antenna, and a 9-volt battery. 
 
-
-Armband on arm (left) and close up (on right).
+![Armband](assets/armband.png)  
+**Armband on arm (left) and close up (right).**
 
 ##### Arduino 
 The readings from the sensors are sent to the Arduino which has a sketch uploaded to it that interprets the data and constructs a packet containing the information. Towards the end of the build, it was discovered that the Arduino Uno does not have a hardware serial port available to connect to the transceiver. Instead, the SoftwareSerial library was used to repurpose two of the Arduino’s general purpose input/output pins for serial communication. The packet of sensor data is sent from these pins to the CMD_DATA_IN pin on the HumPRO transceiver. The Arduino is powered by a 9-volt battery or by USB connection and affixed to the armband protoboard with a velcro tab. 
@@ -65,20 +66,20 @@ The HumPRO 900 MHz transceiver is a surface-mount device with a 1.27 mm spacing 
 
 The CMD pin on the HumPRO is first set to logic low to send commands to configure the device. It is then set to logic high to place the module in data receiving mode, allowing the HumPRO to receive the packet from the Arduino. It then transmits the packet to the HumPRO transceiver on the base station. 
 
-
-Mounting for the HUMPro transceiver and antenna on the base station. 
+![Base station transceiver and antenna](assets/transceiver_soldering.png)  
+**Mounting for the HUMPro transceiver and antenna on the base station.**
 
 ##### Quarter-Wave Ground-Line Antenna 
 The antenna used is a planar quarter wave antenna, which requires a ground plane as a counterpoise. The ground plane was made with copper adhesive foil on the underside of the protoboard. The copper foil was cut around the pins for the components prior to soldering and the stripboard was cut as well. The layout was chosen with the intent of maximizing the size of the ground plane while keeping the antenna as close as possible to the transceiver. The ground plane was connected to a ground pin on the Arduino, and the ground pins on the transceiver and antenna were all connected to the ground plane. 
 
-
-Ground plane for the antenna on the arm band. 
+![Armband ground plane](assets/gnd_plane_armband.png)  
+**Ground plane for the antenna on the armband.** 
 
 #### The Base Station
 The base station features a protoboard carrying a HumPRO transceiver, a planar antenna, and the Teensy++2.0 microcontroller unit.
 
-
-Base station featuring Teensy++2.0, HUMPro, antenna, and LEDs.
+![Base station](assets/base_station.png)  
+**Base station featuring Teensy++2.0, HUMPro, antenna, and LEDs.**
 
 ##### HumPRO Transceiver (Receiving)
 The HumPRO on the base station receives the packet from the armband unit and passes it to the Teensy++2.0 module. It is set up in the same way as the one on the armband, with the addition of a green LED to show transmission is occurring and a red LED to show it is receiving power. 
@@ -137,32 +138,20 @@ The Teensy board on the base station runs a sketch called base_station.ino, whic
 
 - Create a GUI for reassigning the functions of each contact pad and flex sensor. 
 
-
-
-
-
-
-#### Electro-static Discharge (ESD) Wristband 
-A few of the components, namely the HUMPro transceivers and the planar antennas, were susceptible from damage from ESD. Before beginning construction of the armband and base station, a ESD wristband was built and worn at all times when working with the sensitive components. 
+#### Electrostatic Discharge (ESD) Wristband 
+A few of the components, namely the HUMPro transceivers and the planar antennas, were susceptible from damage from ESD. Before beginning construction of the armband and base station, an ESD wristband was built and worn at all times when working with the sensitive components. 
 
 The wristband was made from a nylon strap with velcro fasteners. It was lined with a strip of copper adhesive foil. A 22 gauge wire was soldered to the copper foil, and a 1 MOhm resistor was added in series to protect the wearer from high currents. 
 
 A wall socket was tested using a digital multimeter by measuring the AC voltage between the positive and negative holes, between the positive and earth-ground holes, and the negative and earth ground holes. The voltage drop from positive to both negative and ground was the same, and the difference between negative and earth ground was zero. This indicated that the outlet was properly grounded. The same procedure was done on the screw in the middle of the outlet plate, with the same result. The end of the wristband wire was then wrapped around the earth-grounded screw. 
 
+![ESD wristband](assets/esd_wristband.png)  
+**Construction of the ESD wristband.**
 
+## Project Timeline
 
-
-
-
-
-
-
-
-
-
-## Timeline
-
-Timeline presented in initial proposal (blue) compared to the actual timeline (red). 
+![Project timeline](assets/project_timeline.png)  
+**Comparison of the timeline presented in initial project proposal (blue) compared to the actual timeline (red).**
 
 The timeline that was proposed at the beginning of the quarter was overly optimistic. Notably, ordering and waiting for parts to arrive took four weeks instead of the projected two weeks. The several tasks immediately after were accordingly pushed back by about two weeks, with the remaining tasks being condensed to fit the time available. Additionally, the code required significantly more time than anticipated, as it required consistent updating through the quarter.
 
@@ -170,21 +159,21 @@ The timeline that was proposed at the beginning of the quarter was overly optimi
 
 All of the objectives were met before the presentation deadline with one exception: the scrolling function only scrolls upwards and not downwards, thus is considered half operational.  
 
-- Basic Functionality (60%)
+-**Basic Functionality (60%)**  
   - Accelerometer-based cursor movement works 			(20/20)
   - Left click and right click work 						(20/20)
   - Scrolling works 							(5/10)
   - Movement reset functionality works 					(5/5)
   - Middle click works 							(5/5)
 
-- Practicality of Use (20%)
+-**Practicality of Use (20%)**  
   - Touch Typing Speed							(20/20)
-    - My typing test score with and without glove is comparable
+    - Online typing test score with and without glove is similar 
 
-- Quality of Construction (20%)
+-**Quality of Construction (20%)**  
   - Sewing, soldering, gluing are all neat and sturdy 			(20/20)
 
-- Bonus: Rapid fire mode successfully implemented 
+-**Bonus:** Rapid fire mode successfully implemented 
 
 ## Bill of Materials
  | Part | Unit Cost | Vendor | Part Number | Quantity | Cost |  
@@ -213,7 +202,7 @@ All of the objectives were met before the presentation deadline with one excepti
  | 2.1 mm DC Barrel Jack | $0.95 | Mouser | 485-373 | 2 | $1.90 |  
  | 9 V Battery Clip with 2.1 mm plug | $2.95 | Mouser | 485-80 | 1 | $2.95 |  
  | 22 Gauge Solid Wire (25') | $2.95 | Mouser | 485-288 | 1 | $2.95 |. 
- | Desoldering Braid | $4.28 | | Mouser | 809-OS-C-5AS | 1 | $4.28 |  
+ | Desoldering Braid | $4.28 | Mouser | 809-OS-C-5AS | 1 | $4.28 |  
  | 9 V battery (2 pack) | $6.69 | Amazon | B00V4KW1GG | 1 | $6.69 |  
  | Copper foil tape | $12.69 | Amazon | B01I1XNY1E | 1 | $12.69 |  
  | Velcro | $1.99 | Amazon | B00114506I | 1 | $1.99 |
