@@ -1,5 +1,7 @@
 # Glove Mouse 2.0
 
+![](assets/glove_close_up.jpg)
+
 Casey Mordini-Bluhm  
 Electronics for Physical Measurements Lab, Spring 2020  
 Professor Eric Hudson  
@@ -10,7 +12,7 @@ The objective was to create a device that is wearable on the hand and has all th
 ## Design
 The design used in this project is primarily based on the Glove Mouse project built by Hyodong Lee and Adam Shih when they were students of Bruce Land at Cornell University. Different transceivers and sensors were used, and one of the microcontrollers was replaced by an Arduino Uno. The code used in this project is a modified version of their code and code from PRJC.com. 
 
-Many thanks to the original creators’ hard work and commitment to sharing of knowledge. Their project was followed closely, with some improvements made. There were also some aspects of the design that were less successfully implemented than in original project; nonetheless, I feel it appropriate to refer to the current project as Glove Mouse 2.0.
+Many thanks to the original creators’ hard work and commitment to sharing of knowledge. Their project was followed closely, with some changes and improvements. There were also some aspects of the design that were less successfully implemented than in original project; nonetheless, I feel it appropriate to refer to the current project as Glove Mouse 2.0.
 
 ![Block Diagram for Glove Mouse 2.0](assets/block_diagram.png)  
 **Block diagram for Glove Mouse 2.0.** The project is made up of three units: the glove, the armband, and the base station. The glove houses sensors, which are monitored by an Arduino Uno on the armband. An RF transceiver on the armband transmits to an RF transceiver on the base station, which sends the data to a microcontroller connected to the computer. 
