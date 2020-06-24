@@ -1,7 +1,16 @@
+/* armband.ino is for upload to the Arduino on the armband of the Glove Mouse. 
+
+   It reads sensor data from the glove and sends packets with cursor and click information to the 
+   transmitting transceiver.
+   
+   Currently it uses the SoftwareSerial library for serial communication with the transceiver, but this
+   will be changed to a hardware serial when Arduino Mega is used instead of Arduino Uno. 
+*/
+
 // Debugging parameters for serial communication
-bool tx_enable = true;
-bool print_packet = false;
-bool print_mouse_actions = false;
+bool tx_enable = true; // true to send packets to transceiver 
+bool print_packet = false; // true to print packets to serial monitor for debugging
+bool print_mouse_actions = false; // true to print click messages to serial monitor
 
 //----------------------------------------------------------------------------------------------------//
 //                                         PIN ASSIGNMENTS                                            //
@@ -43,39 +52,31 @@ bool print_mouse_actions = false;
 #define PIN13 0x20      // 00100000 The last two bits in this register are for something else. 
 
 //----------------------------------------------------------------------------------------------------//
-//                                     SYNC and ADDR bytes                                            //
+//                                     SERIAL COMMUNICATION SETUP                                     //
 //----------------------------------------------------------------------------------------------------//
 
-//og code libraries                 (n)
-//og code Baud rate setup           (n)
 #include <SoftwareSerial.h> // Library that turns 2 GPIO ports into RX/TX ports. Low baud capabilities.
 
 // Transmission pin alias
 #define TX_PIN 4
 #define RX_PIN 3
 
-SoftwareSerial HumPROSerial(RX_PIN,TX_PIN); // Create
+SoftwareSerial HumPROSerial(RX_PIN,TX_PIN); // Create a Software Serial port on GPIO pins
 
-#define BAUDRATE 19200  // choose the baud rate. SoftwareSerial works for only 9600 and 19200 currently. 
-                        // Technically it should go significantly higher, but I can't get it to work.
-                        // Could be due to the use of timer interrupts
+#define BAUDRATE 19200  // Choose the baud rate. SoftwareSerial works for only 9600 and 19200 currently. 
+                        // Supposedly it should go higher, but I can't get anything above 19200.
 
-//og code sync byte                 (?)
-    // read through HumPRO, Arduino, or UART literature
-    // used by the base station code to determine the start of a packet
+// used by the base station code to determine the start of a packet
 #define SYNC 0xAA
 
-//og code address byte              (?)
-    // find out how to get this from HumPRO transceivers
-    // HumPRO transceivers have unique 4-byte DSN 
-    // In Extended user addressing mode, HumPRO transceivers default to 0xFF address
+// HumPRO transceivers have unique 4-byte DSN but, in Extended user addressing mode, HumPRO 
+// transceivers default to 0xFF address
 #define ADDR 0xFF
 
 //----------------------------------------------------------------------------------------------------//
 //                                         DEBOUNCING DEFINITIONS                                     //
 //----------------------------------------------------------------------------------------------------//
 
-//og code debouncing vars           (y)
 #define timeout 30      // Timeout value for the state machine
   
 #define NoPush      1
@@ -84,36 +85,9 @@ SoftwareSerial HumPROSerial(RX_PIN,TX_PIN); // Create
 #define MaybeNoPush 4   // ie MaybeRelease
 
 //----------------------------------------------------------------------------------------------------//
-//                                         SENSOR MESSAGES                                            //
-//----------------------------------------------------------------------------------------------------//
- 
-//og code button press/release vars (y?)
-#define left_click            0x80 
-#define left_click_release    0x01
-
-#define middle_click          0x40
-#define middle_click_release  0x02
-
-#define right_click           0x20
-#define right_click_release   0x04
-
-#define rapid_fire            0x08
-
-//og code sensor message chars      (y)
-unsigned char msg_inter_finger_pad;        // Middle click
-unsigned char msg_inter_finger_pad_release;
-
-unsigned char msg_pointer_flex;           // Left click
-unsigned char msg_pointer_flex_release;
-
-unsigned char msg_middle_flex;            // Right click
-unsigned char msg_middle_flex_release;
-
-//----------------------------------------------------------------------------------------------------//
 //                                         DEBOUNCING PARAMS                                          //
 //----------------------------------------------------------------------------------------------------//
 
-//og code debouncing parameters     (y)
 volatile unsigned char tasktime;  // Timeout counter
 
 unsigned char PushState;          // State machine for contact pads
@@ -125,14 +99,37 @@ unsigned char flexnumPressed;     // Stores which flex sensor was last flexed
 unsigned char currentButton;      // Stores which contact pad is currently pressed 
 unsigned char currentFlex;        // Stores whcih flex sensor is currently flexed
 
-//og code debouncing subroutine     (y) Defined at the end of file
+// Debouncing subroutine called in main loop
 void task1(void);
+
+//----------------------------------------------------------------------------------------------------//
+//                                         SENSOR MESSAGES                                            //
+//----------------------------------------------------------------------------------------------------//
+ 
+#define left_click            0x80 
+#define left_click_release    0x01
+
+#define middle_click          0x40
+#define middle_click_release  0x02
+
+#define right_click           0x20
+#define right_click_release   0x04
+
+#define rapid_fire            0x08
+
+unsigned char msg_inter_finger_pad;        // Middle click
+unsigned char msg_inter_finger_pad_release;
+
+unsigned char msg_pointer_flex;           // Left click
+unsigned char msg_pointer_flex_release;
+
+unsigned char msg_middle_flex;            // Right click
+unsigned char msg_middle_flex_release;
 
 //----------------------------------------------------------------------------------------------------//
 //                                         ACCELEROMETER PARAMS                                       //
 //----------------------------------------------------------------------------------------------------//
   
-//og code acceleration parameters   (y)  
 #define accel_timeout 2                   // for state machine
 
 char move_en;                             // Flag for movement enable
@@ -141,7 +138,7 @@ volatile unsigned char aX;                // Samples analog pins
 volatile unsigned char aY;
 volatile unsigned char aZ;
 
-// calculated in the calibration function each time move is enabled
+// Calculated in the calibration function each time move is enabled
 volatile signed long aX_ref;              // Offset calculated from position on move enable
 volatile signed long aY_ref;
 volatile signed long aZ_ref;
@@ -165,20 +162,17 @@ volatile signed int move_y;
 volatile unsigned char acceltime;   /*  Used in ISR to alternate between calculating and sending
                                         data. timeout is accel_timeout = 2 from above.              */
                                         
-//og code scroll enable flag        (y)
-/*  Turns on when button is held down. */
+// Enable scrolling. Takes precedence over cursor movement. 
 char scroll_en;
 
-//og code time count for scrolling  (y)
-/* Goes from 0 to 90. Multiply by the 8ms increment of the ISR, and you get 
-   a scroll message sent every 720 ms */
+// Time count for scrolling
+// Goes from 0 to 90. Multiply by the 8ms increment of the ISR, and you get 
+// a scroll message sent every 720 ms
 volatile unsigned char scrolltime; 
 
 //----------------------------------------------------------------------------------------------------//
 //                                             MODE FLAGS                                             //
 //----------------------------------------------------------------------------------------------------//
-
-//og code mode flags                (y)   (rapid fire mode, invert axes)
 
 char rapid_fire_en;   // Flag for rapid fire mode enable. Toggled by contact pad
 
@@ -187,20 +181,16 @@ char send_rapid_fire; // Flag for transmitting rapid fire
 signed int invert_x;  // Flag for invert_x enable
 signed int invert_y;  // Flag for invert_y enable
 
-//og code handshake vs flat mode flag
 char accel_mode;      // handshake (1) vs flat (0) orientation
 
-//og code cursor sensitivity flag   (y)
+// Cursor sensitivity flag
 unsigned char sensitivity;
 
 //----------------------------------------------------------------------------------------------------//
 //                                         UART COMMUNICATION                                         //
 //----------------------------------------------------------------------------------------------------//
 
-//og code UART file descriptor      (n?)
-//og code uart write function       (n?)  (serial.write instead)
-//og code packet send function      (y)   (take date and address and start/stop and serial.write it)
-/* tx_packet function packs a packet, slaps a stamp on it and sends it 6 bytes of information
+/* tx_packet function packs a 6 byte packet, slaps a stamp on it and sends it to the serial port
    
    @param x the x-position of the mouse
    @param y the y-position of the mouse
@@ -232,7 +222,6 @@ void tx_packet(uint8_t x, uint8_t y, uint8_t _scroll, uint8_t button_press) {
 //                                        SENSOR READING FUNCTIONS                                    //
 //----------------------------------------------------------------------------------------------------//
 
-//og code readAccel function        (y)   (I get my values directly from ADC pins with AnalogRead, 
 /* readAccel function reads the inputs from the accelerometer, storing the appropriate values based  
    on the value of accelmode (0 for flat hand mode, 1 for handshake mode).
 */ 
@@ -280,7 +269,6 @@ unsigned char readFlex() {
   return FLEXread;
 }
 
-//og code calibration function      (y)   prototype done
 /* calibrate function tares the orientation of the accelerometer (modified from glove.c calibrate 
    function). As in the code from Hyodong, samples 1024 values of the acceleration and averages.
    Current issue: not sure about values from analogRead()
@@ -328,13 +316,10 @@ void calibrate(void) {
   accel_y_prev = aY_ref;
 }
 
-//og code initialize UART fn        (n)   Just use serial.begin(BAUD), I think
-
 //----------------------------------------------------------------------------------------------------//
 //                                       TIMER INTERRUPT DEFINITION                                   //
 //----------------------------------------------------------------------------------------------------//
 
-//og code interrupt timer           (y?)  
 /*  Timer 0 compare ISR.
     Interrupt occurs every 4 ms. 
     The ADC sample is read and the tilt is computed as cursor movement or scroll, then transmitted 
@@ -430,7 +415,6 @@ ISR (TIMER0_COMPA_vect) {
 //                                         ARDUINO SETUP LOOP                                         //
 //----------------------------------------------------------------------------------------------------//
 
-//og code main loop setup           (y)   split in to setup and loop routines in Arduino. 
 /* Executed once when code is run.
    Sets the pins for the sensors
    Initializes various flags/modes
@@ -548,7 +532,7 @@ void setup() {
   TCNT0 = 0; 
   TCCR0A = 0;                           // turn on clear-on_match
 
-  //og code initialize acceleration related parameters
+  // Initialize acceleration related parameters
   acceltime = 0;
   aX = 0;
   aY = 0;
@@ -562,7 +546,7 @@ void setup() {
   Serial.print(sensitivity);
   Serial.println();
   
-  //og code initialize mode flags and parameters
+  // Initialize mode flags and parameters
   move_en = 1;
   scroll_en = 0;
   rapid_fire_en = 0;
@@ -578,7 +562,6 @@ void setup() {
 //                                          ARDUINO MAIN LOOP                                         //
 //----------------------------------------------------------------------------------------------------//
 
-//og code main loop                 (y)   
 /*  Arduino loop() function calls the debouncing subroutine task1() repeatedly  
 */
 void loop() {
@@ -593,8 +576,7 @@ void loop() {
 //                                          DEBOUNCING SUBROUTINE                                     //
 //----------------------------------------------------------------------------------------------------//
 
-//og code task1 function (in main)  (y)   This is the main loop in Arduino code
- /* State machine for the button presses
+ /* State machine for contact pad presses and flex sensors bending
     Serves to prevent button bounce
   */
 void task1(void) {
