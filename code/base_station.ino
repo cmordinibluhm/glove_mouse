@@ -1,10 +1,27 @@
-bool serial_msgs = true;
-bool print_packet = true;
+/* base_station.ino is for upload to the Teensy++2.0 MCU on the base station of the Glove Mouse.  
+   
+   It waits for a sync byte and an address byte and then reads the following 4 bytes into cursor
+   movement, click, and scroll variables. These are then used to execute the mouse actions through 
+   the Keyboard+Mouse mode of the Teensy IDE.
+*/
+
+//----------------------------------------------------------------------------------------------------//
+//                                       DEBUGGING OPTIONS                                            //
+//----------------------------------------------------------------------------------------------------//
+
+bool serial_msgs = true; // True to print mouse actions to the serial monitor
+bool print_packet = true; // True to print packet to the serial monitor
+
+//----------------------------------------------------------------------------------------------------//
+//                                  SERIAL COMMUNICATION VARIABLES                                    //
+//----------------------------------------------------------------------------------------------------//
 
 #define BAUDRATE 19200  // Baud rate for the radio transmitter
 
 #define SYNC 0XAA // SYNC byte for packet
 #define ADDR 0xFF // Address byte for packet
+
+#define pixstep 5 // Pixel increment to move the cursor
 
 volatile unsigned char sync;  // SYNC byte
 volatile unsigned char addr;  // ADDRRESS byte
@@ -18,6 +35,10 @@ volatile unsigned char firetime;  // Timeout counter for rapid fire
 volatile unsigned char step_x;    // Step for x axis movement
 volatile unsigned char step_y;    // Step for y axis movement
 
+//----------------------------------------------------------------------------------------------------//
+//                                           SET UP LOOP                                              //
+//----------------------------------------------------------------------------------------------------//
+
 void setup() {  
   //Mouse.screenSize(1440,900,true); // only available with Teensy 3.x +
   
@@ -25,7 +46,7 @@ void setup() {
   pinMode(PIN_D6, OUTPUT);
   digitalWrite(PIN_D6, LOW);
   
-  Serial.begin(9600); 
+  Serial.begin(9600); // HumPRO transceivers start at 9600, so this is required during setup
   Serial1.begin(9600); // 58820 equivalent to Arduino 57600. Or set arduino to 57601 (this works better).
 
   // set the addressing mode to 0x07 (Extended User Addressing Mode)
@@ -48,8 +69,8 @@ void setup() {
 */
 
   // change the data rate with the UARTBAUD register (default is 9600)
-  // 0xFF   0x02  0x03                  V
-  // header size  non-volatile address  value
+  // 0xFF     0x02    0x03                    V
+  // header   size    non-volatile address    value
   // value is 0x04 for a baud rate of 57600 
   // power must be cycled for non-volatile changes
   Serial1.write(0xFF); // header
@@ -57,7 +78,7 @@ void setup() {
   Serial1.write(0x4E); // volatile register address (UARTBAUD)
   Serial1.write(0x02); // set baud rate to 57600 (0x04), or 9600 (0x01), 19200(0x02), 38400(0x03)
   
-  // reconfigure the Teensy baud rate to match the new HumPRO baud rate
+  // reconfigure the Teensy baud rates to match the new HumPRO baud rate
   Serial.flush();
   Serial.begin(BAUDRATE);
   Serial1.flush();
@@ -72,7 +93,7 @@ void setup() {
   Serial1.write(0xFE);
   Serial1.write(0x4E);
 */
-  // pull CMD line to HIGH to enter transmit mode
+  // Pull HumPRO CMD pin HIGH to enter transmit mode
   digitalWrite(PIN_D6, HIGH);
   
   // Initialize flag for rapid fire mode
@@ -80,10 +101,12 @@ void setup() {
 
 }
 
-/* --------------------------------------------------------------
- * Main loop:
- *    Endless while loop to wait for the receive interrupt.
- *    Before the loop, first initialize all the settings. */
+//----------------------------------------------------------------------------------------------------//
+//                                              MAIN LOOP                                             //
+//----------------------------------------------------------------------------------------------------//
+
+/* Endless while loop to wait for data from transceiver.
+*/
 void loop() {
   
   // Receive messages in order if sync byte matches
@@ -168,14 +191,14 @@ void loop() {
       
       // Move the mouse cursor
       if (xAxis < 128 && xAxis > 10) {
-        Mouse.move(5,0);
+        Mouse.move(pixstep,0);
       } else if (xAxis > 128 && xAxis < 246) {
-        Mouse.move(-5,0);
+        Mouse.move(-pixstep,0);
       }
      if (yAxis < 128 && yAxis > 10) {
-        Mouse.move(0,5);
+        Mouse.move(0,pixstep);
       } else if (yAxis > 128 && yAxis < 246) {
-        Mouse.move(0,-5);
+        Mouse.move(0,-pixstep);
       }
       
       //Mouse.move(xAxis,yAxis);
