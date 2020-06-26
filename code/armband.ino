@@ -583,7 +583,7 @@ void task1(void) {
 
   tasktime = timeout;             // Reset the task timer (timeout = 30)
   currentFlex = readFlex();       // Read currently flexed sensors
-  currentButton = ~(PINB-61);     // Read currently pressed buttons (negated bc buttons are pulled high
+  currentButton = ~(PINA-61);     // Read currently pressed buttons (negated bc buttons are pulled high
                                   // by internal pullup resistors)
   /*                                
   Serial.print("The currentButton value is: ");
